@@ -330,7 +330,7 @@ module split_screw_part ()
 		render(convexity=2)
 		rotate_y(-90)
 		bag (
-			reverse_list(
+			reverse(
 			center_list(size=[box_size_gap[2]-tongue_bind_thickness_end, box_size_gap[1]], list=
 				square_curve([box_size_gap[2]                          , box_size_gap[1]])
 				) )
@@ -474,10 +474,10 @@ function tooth_profile_cut () =
 		 [[-r_edge, -extra]]
 		//
 		,translate_points( circle_curve (r=r_edge, angle=[90, 270], slices="x") , [-r_edge, r_edge])
-		,reverse_list(
+		,reverse(
 		 translate_points( circle_curve (r=r_edge, angle=[90, 90 ], slices="x") , [ r_edge, screw_tooth_depth-r_edge]))
 		//
-		,reverse_list(
+		,reverse(
 		 translate_points( circle_curve (r=r_edge, angle=[90, 0  ], slices="x") , [screw_tooth_diameter-r_edge, screw_tooth_depth-r_edge]))
 		,translate_points( circle_curve (r=r_edge, angle=[90, 180], slices="x") , [screw_tooth_diameter+r_edge, r_edge])
 		//
@@ -518,15 +518,11 @@ module wedge_simple (size, h, tip_y=0, center)
 	]);
 }
 
-function mult_each (list, list2) =
-	[ for (i=[0:len(list)-1]) list[i] * list2[i] ]
-;
-
 function center_list (list, size, axis) =
 	let(
 		Size   = parameter_numlist (3, size, preset=[0,0,0], fill=0),
 		Axis   = parameter_numlist (3, axis, preset=[1,1,1], fill=0),
-		Center = mult_each (Size, Axis) / -2
+		Center = multiply_each (Size, Axis) / -2
 	)
 	translate_points(list, Center)
 ;
@@ -534,7 +530,7 @@ module center (size, axis)
 {
 	Size   = parameter_numlist (3, size, preset=[0,0,0], fill=0);
 	Axis   = parameter_numlist (3, axis, preset=[1,1,1], fill=0);
-	Center = mult_each (Size, Axis) / -2;
+	Center = multiply_each (Size, Axis) / -2;
 	translate(Center)
 	children();
 }
