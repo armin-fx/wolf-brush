@@ -2,7 +2,7 @@ include <banded.scad>
 
 /* [Tongue] */
 
-// 76mm
+// original: 76mm
 tongue_length    = 75.5;
 tongue_width     = 18;
 tongue_thickness =  7;
@@ -40,18 +40,24 @@ screw_tooth_depth    = 1;
 //
 screw_outer_diameter = 34;
 
-/* [3D-Print] */
+/* [Common] */
 
-component = "complete"; // ["complete", "tongue part", "screw part", "parts together"]
-
-type = "component"; // ["component", "printable"]
-
-gap_component = 0.12;
-wall = 3;
+component = "complete"; // ["complete", "tongue part", "screw part", "parts together", "test_clips"]
 
 link_type = "tongue through"; // ["tongue short", "tongue through", "clips"]
 
 glue_bags = true;
+
+glue_bag_depth = 0.25; // [0.05:0.05:1]
+
+glue_bag_slot  = 1.0; // [0.1:0.1:3]
+
+gap_component = 0.12;
+wall = 3;
+
+/* [3D-Print] */
+
+type = "component"; // ["component", "printable"]
 
 support             = false;
 support_gap_z       = 0.1;
@@ -208,8 +214,8 @@ module split_tongue_part ()
 	{
 		union()
 		{
-			center([0, box_size[1], box_size[2]-tongue_bind_thickness_end])
-			cube(box_size);
+			translate_z(tongue_bind_thickness_end/2)
+			cube_extend(box_size, align=[1,0,0]);
 			if (link_type=="tongue through" || link_type=="clips")
 			{
 				translate_x(box_size[0])
@@ -231,12 +237,12 @@ module split_tongue_part ()
 		}
 		//
 		if (glue_bags==true)
-		place_x(place_list)
+		place_copy_x(place_list)
 		render(convexity=2)
 		rotate_y(-90)
 		bag (
-			center_list(size=[box_size[2]-tongue_bind_thickness_end, box_size[1]], list=
-				square_curve([box_size[2]                          , box_size[1]])
+			translate_x_points(l=tongue_bind_thickness_end/2, list=
+				square_curve([box_size[2], box_size[1]], align=[0,0])
 				)
 			, side=0.5
 		);
@@ -249,7 +255,10 @@ test_trace=[
 	[11,2],
 	[11,3]
 ];
-*clips_trace(test_trace) clips_side_plane_tongue();
+if (component=="test_clips")
+{
+	clips_trace(test_trace) clips_side_plane_tongue();
+}
 
 // expandiere den clips in Y-Richtung entlang einer Spur
 module clips_trace (trace, l=1000)
@@ -261,16 +270,14 @@ module clips_trace (trace, l=1000)
 	intersection()
 	{
 		translate_y(y_min)
-		center([l,0,l], [1,0,1])
-		cube  ([l,y_diff,l]);
+		cube_extend ([l,y_diff,l], align=[0,1,0]);
 		
 		mirror_copy_x()
 		intersection()
 		{
 			plain_trace_extrude (trace) children();
 			
-			center([l,l,l], [0,1,1])
-			cube  ([l,l,l]);
+			cube_extend ([l,l,l], align=[1,0,0]);
 		}
 	}
 }
@@ -308,8 +315,8 @@ module split_screw_part ()
 		union()
 		{
 			translate_x(-extra)
-			center([0, box_size_gap[1], box_size_gap[2]-tongue_bind_thickness_end])
-			cube(box_size_gap);
+			translate_z(tongue_bind_thickness_end/2)
+			cube_extend (box_size_gap, align=[1,0,0]);
 			//
 			if (link_type=="tongue through" || link_type=="clips")
 			{
@@ -326,13 +333,13 @@ module split_screw_part ()
 		}
 		//
 		if (glue_bags==true)
-		place_x(place_list)
+		place_copy_x(place_list)
 		render(convexity=2)
 		rotate_y(-90)
 		bag (
 			reverse(
-			center_list(size=[box_size_gap[2]-tongue_bind_thickness_end, box_size_gap[1]], list=
-				square_curve([box_size_gap[2]                          , box_size_gap[1]])
+			translate_x_points(l=tongue_bind_thickness_end/2, list=
+				square_curve([box_size_gap[2], box_size_gap[1]], align=[0,0])
 				) )
 			, side=0.5
 		);
@@ -358,8 +365,8 @@ module tongue ()
 {
 	difference()
 	{
-		center        ([0            , tongue_width, tongue_thickness])
-		cube_rounded  ([tongue_length, tongue_width, tongue_thickness]
+		cube_rounded ([tongue_length, tongue_width, tongue_thickness]
+			,align=[1,0,0]
 			,r=1
 			,edges_side  =0
 			,edges_bottom=[1,0,1,0]
@@ -368,11 +375,11 @@ module tongue ()
 		
 		difference()
 		{
-			r_end =  get_radius_from (chord=tongue_width, sagitta=tongue_end_length);
+			r_end = get_radius_from (chord=tongue_width, sagitta=tongue_end_length);
 			//
 			translate_x(-extra)
-			center([0          , tongue_width+extra*2, tongue_thickness+extra*2])
-			cube  ([r_end+extra, tongue_width+extra*2, tongue_thickness+extra*2]);
+			cube_extend ([r_end+extra, tongue_width+extra*2, tongue_thickness+extra*2]
+				,align=[1,0,0]);
 			//
 			translate_x(r_end)
 			cylinder_extend (r=r_end, h=tongue_thickness, center=true);
@@ -406,8 +413,7 @@ module tongue_bind()
 		[tongue_bind_thickness_begin, 0],
 		[0                          , 0]
 	]);
-	center([0                 , tongue_width, tongue_thickness])
-	cube  ([tongue_bind_length, tongue_width, tongue_thickness]);
+	cube_extend ([tongue_bind_length, tongue_width, tongue_thickness], align=[1,0,0]);
 }
 
 module screw ()
@@ -436,13 +442,12 @@ module screw ()
 	cylinder_extend(h=screw_cylinder_depth, d=screw_diameter_begin);
 	//
 	translate_x(shaft_length+10 + screw_cylinder_depth)
+	//rotate_x(90)
+	rotate_y(90)
 	difference()
 	{
-		rotate_y(90)
 		cylinder_extend(h=screw_depth, d1=screw_diameter_begin, d2=screw_diameter_end);
 		//
-		//rotate_x(90)
-		rotate_y(90)
 		helix_extrude (
 			height=screw_depth, pitch=screw_pitch, r=[screw_diameter_begin,screw_diameter_end]/2
 			, slices="x", convexity=0
@@ -453,7 +458,7 @@ module screw ()
 		//place_line([-screw_pitch,screw_depth],screw_tooth_diameter/2)
 		//	rotate_to_vector([-screw_pitch,screw_depth], d=2) rotate(-90)
 		//
-		rotate_to_vector([-screw_pitch,screw_depth], d=2) rotate(-90)
+		rotate_to_vector([-(screw_diameter_begin-screw_diameter_end)/2,screw_depth], d=2) rotate(-90)
 			translate_y (screw_tooth_diameter/2)
 			tooth_profile_cut();
 		
@@ -481,7 +486,7 @@ function tooth_profile_cut () =
 		 translate_points( circle_curve (r=r_edge, angle=[90, 0  ], slices="x") , [screw_tooth_diameter-r_edge, screw_tooth_depth-r_edge]))
 		,translate_points( circle_curve (r=r_edge, angle=[90, 180], slices="x") , [screw_tooth_diameter+r_edge, r_edge])
 		//
-		,[[screw_tooth_diameter+r_edge, -3]]
+		,[[screw_tooth_diameter+r_edge, -extra]]
 	))
 ;
 module tooth_profile_cut_ ()
@@ -490,7 +495,7 @@ module tooth_profile_cut_ ()
 }
 
 // side = value between 0...1, 0.5 = centered slot
-module bag_pane (depth=0.25, slot=1.0, side=0, extra=extra)
+module bag_pane (depth=glue_bag_depth, slot=glue_bag_slot, side=0, extra=extra)
 {
 	translate_y( (2*depth+slot) * side )
 	polygon([
@@ -502,7 +507,8 @@ module bag_pane (depth=0.25, slot=1.0, side=0, extra=extra)
 		[extra , -depth-slot-depth]
 	]);
 }
-module bag (trace, depth=0.25, slot=1.0, side=0, extra=extra)
+
+module bag (trace, depth=glue_bag_depth, slot=glue_bag_slot, side=0, extra=extra)
 {
 	plain_trace_connect_extrude (trace)
 	bag_pane (depth, slot, side);
