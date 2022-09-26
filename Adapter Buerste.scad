@@ -444,25 +444,41 @@ module screw ()
 	translate_x(shaft_length+10 + screw_cylinder_depth)
 	//rotate_x(90)
 	rotate_y(90)
+	render(convexity=6)
 	difference()
 	{
-		cylinder_extend(h=screw_depth, d1=screw_diameter_begin, d2=screw_diameter_end);
+		//fn = 24;
 		//
+		cylinder_extend(h=screw_depth, d1=screw_diameter_begin, d2=screw_diameter_end);
+		
+		// Helix Teil module:
+		/*
 		helix_extrude (
 			height=screw_depth, pitch=screw_pitch, r=[screw_diameter_begin,screw_diameter_end]/2
 			, slices="x", convexity=0
 		)
-		//translate_y(screw_tooth_diameter/2) tooth_profile_cut();
-		//place_line([+screw_pitch,screw_depth],screw_tooth_diameter/2) tooth_profile_cut();
-		//
-		//place_line([-screw_pitch,screw_depth],screw_tooth_diameter/2)
-		//	rotate_to_vector([-screw_pitch,screw_depth], d=2) rotate(-90)
-		//
-		rotate_to_vector([-(screw_diameter_begin-screw_diameter_end)/2,screw_depth], d=2) rotate(-90)
-			translate_y (screw_tooth_diameter/2)
-			tooth_profile_cut();
+		rotate_to_vector([-(screw_diameter_begin-screw_diameter_end)/2,screw_depth], d=2)
+		rotate(-90)
+		translate_y (screw_tooth_diameter/2)
+		tooth_profile_cut();
+		//*/
 		
-		// TODO =======================================================
+		// Helix Teil function:
+		//*
+		build_object(
+			let(
+				a = tooth_profile_cut (),
+				b = translate_y_points      (a, screw_tooth_diameter/2),
+				c = rotate_points           (b, -90),
+				d = rotate_to_vector_points (c, [-(screw_diameter_begin-screw_diameter_end)/2,screw_depth]),
+				//
+				e = helix_extrude_points ( list=d
+					, height=screw_depth, pitch=screw_pitch, r=[screw_diameter_begin,screw_diameter_end]/2
+					, slices="x")
+			) e
+			, convexity=5
+		);
+		//*/
 	}
 }
 
@@ -472,7 +488,7 @@ module tooth_profile_cut ()
 }
 function tooth_profile_cut () =
 	let (
-		$fd=0.01,
+		$fd=0.005,
 		r_edge=screw_tooth_diameter/2 * 0.5
 	)
 	rotate_points( a=90, list=concat(
