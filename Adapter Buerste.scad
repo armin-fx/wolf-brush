@@ -1,5 +1,34 @@
 include <banded.scad>
 
+/* [Assembly] */
+
+component = "complete"; // ["complete", "parts together", "tongue part", "screw part", "test_clips"]
+
+link_type = "tongue through"; // ["tongue short", "tongue long hidden", "tongue through", "clips"]
+
+glue_bags = true;
+
+debug = "none"; // ["none", "slice top", "slice side"]
+
+/* [3D-Print] */
+
+type = "component"; // ["component", "printable"]
+
+support             = false;
+support_gap_z       = 0.1;
+support_gap_xy      = 0.5;
+support_line_width  = 0.7;
+support_brim_height = 0.4;
+
+/* [Common] */
+
+wall = 3;
+
+gap_component = 0.12;
+
+glue_bag_depth = 0.25; // [0.05:0.05:1]
+glue_bag_slot  = 1.0; // [0.1:0.1:3]
+
 /* [Tongue] */
 
 // original: 76mm
@@ -39,35 +68,6 @@ screw_tooth_diameter = 2;
 screw_tooth_depth    = 1;
 //
 screw_outer_diameter = 34;
-
-/* [Common] */
-
-component = "complete"; // ["complete", "tongue part", "screw part", "parts together", "test_clips"]
-
-link_type = "tongue through"; // ["tongue short", "tongue long hidden", "tongue through", "clips"]
-
-glue_bags = true;
-
-glue_bag_depth = 0.25; // [0.05:0.05:1]
-
-glue_bag_slot  = 1.0; // [0.1:0.1:3]
-
-gap_component = 0.12;
-wall = 3;
-
-/* [3D-Print] */
-
-type = "component"; // ["component", "printable"]
-
-support             = false;
-support_gap_z       = 0.1;
-support_gap_xy      = 0.5;
-support_line_width  = 0.7;
-support_brim_height = 0.4;
-
-/* [Debug] */
-
-debug = "none"; // ["none", "slice top", "slice side"]
 
 /* [Hidden] */
 
