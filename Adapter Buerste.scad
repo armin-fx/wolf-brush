@@ -65,6 +65,10 @@ support_gap_xy      = 0.5;
 support_line_width  = 0.7;
 support_brim_height = 0.4;
 
+/* [Debug] */
+
+debug = "none"; // ["none", "slice top", "slice side"]
+
 /* [Hidden] */
 
 $fd=0.01;
@@ -73,68 +77,75 @@ screw_length = shaft_length+10+screw_cylinder_depth+screw_depth;
 
 shaft_curve = superellipse_curve (interval=[0,360], r=0.5, a=[shaft_thickness,shaft_width], n=shaft_n, slices="x");
 
-//object_slice(axis=[0,0,1])
-//object_slice(axis=[0,1,0])
-if (component=="complete")
+if (debug=="none") show();
+if (debug=="slice top")  object_slice(axis=[0,0,1]) show();
+if (debug=="slice side") object_slice(axis=[0,1,0]) show();
+
+module show ()
 {
-	if (type=="component")
+	if (component=="complete")
 	{
-		tongue ();
-		translate_x(tongue_length+tongue_bind_length)
-		screw ();
-	}
-	else if (type=="printable")
-	{
-		translate_z(tongue_length+tongue_bind_length+screw_length)
-		rotate_y(90)
+		if (type=="component")
 		{
 			tongue ();
 			translate_x(tongue_length+tongue_bind_length)
 			screw ();
 		}
-		
-		if (support)
+		else if (type=="printable")
 		{
-			screw_support();
+			translate_z(tongue_length+tongue_bind_length+screw_length)
+			rotate_y(90)
+			{
+				tongue ();
+				translate_x(tongue_length+tongue_bind_length)
+				screw ();
+			}
+			
+			if (support)
+			{
+				screw_support();
+			}
 		}
 	}
-}
-else if (component=="tongue part")
-{
-	if (type=="component")
+	else if (component=="tongue part")
 	{
-		split_tongue_part ();
-	}
-	else if (type=="printable")
-	{
-		translate_z(tongue_thickness/2)
-		split_tongue_part ();
-	}
-}
-else if (component=="screw part")
-{
-	if (type=="component")
-	{
-		split_screw_part ();
-	}
-	else if (type=="printable")
-	{
-		rotate_y(90)
-		translate_x(-tongue_length-tongue_bind_length-screw_length)
-		union()
-		split_screw_part ();
-		
-		if (support)
+		if (type=="component")
 		{
-			screw_support();
+			split_tongue_part ();
+		}
+		else if (type=="printable")
+		{
+			translate_z(tongue_thickness/2)
+			split_tongue_part ();
 		}
 	}
+	else if (component=="screw part")
+	{
+		if (type=="component")
+		{
+			split_screw_part ();
+		}
+		else if (type=="printable")
+		{
+			rotate_y(90)
+			translate_x(-tongue_length-tongue_bind_length-screw_length)
+			union()
+			split_screw_part ();
+			
+			if (support)
+			{
+				screw_support();
+			}
+		}
+	}
+	else if (component=="parts together")
+	{
+		split_tongue_part ();
+		split_screw_part ();
+	}
 }
-else if (component=="parts together")
-{
-	split_tongue_part ();
-	split_screw_part ();
-}
+
+//--------------------------------------------------------------------------------
 
 module screw_support ()
 {
@@ -529,6 +540,8 @@ module bag (trace, depth=glue_bag_depth, slot=glue_bag_slot, side=0, extra=extra
 	plain_trace_connect_extrude (trace)
 	bag_pane (depth, slot, side);
 }
+
+//--------------------------------------------------------------------------------
 
 module wedge_simple (size, h, tip_y=0, center)
 {
