@@ -44,7 +44,7 @@ screw_outer_diameter = 34;
 
 component = "complete"; // ["complete", "tongue part", "screw part", "parts together", "test_clips"]
 
-link_type = "tongue through"; // ["tongue short", "tongue through", "clips"]
+link_type = "tongue through"; // ["tongue short", "tongue long hidden", "tongue through", "clips"]
 
 glue_bags = true;
 
@@ -227,36 +227,48 @@ module split_tongue_part ()
 		{
 			translate_z(tongue_bind_thickness_end/2)
 			cube_extend(box_size, align=[1,0,0]);
-			if (link_type=="tongue through" || link_type=="clips")
+			//
+			if (link_type=="tongue through" || link_type=="tongue long hidden")
 			{
-				translate_x(box_size[0])
-				rotate_z(-90)
-				wedge_rounded(
-					v_min=[-wedge_begin/2,0          ,-box_size[2]/2+tongue_bind_thickness_end/2],
-					v_max=[ wedge_begin/2,screw_depth, box_size[2]/2+tongue_bind_thickness_end/2],
-					v2_min=[-wedge_end/2             ,-box_size[2]/2+tongue_bind_thickness_end/2],
-					v2_max=[ wedge_end/2             , box_size[2]/2+tongue_bind_thickness_end/2],
-					r=wedge_r, edges_bottom=[0,1,0,1],  edges_top=[0,1,0,1], edges_side=0
-				);
+				difference()
+				{
+					translate_x(box_size[0])
+					rotate_z(-90)
+					wedge_rounded(
+						v_min=[-wedge_begin/2,0          ,-box_size[2]/2+tongue_bind_thickness_end/2],
+						v_max=[ wedge_begin/2,screw_depth, box_size[2]/2+tongue_bind_thickness_end/2],
+						v2_min=[-wedge_end/2             ,-box_size[2]/2+tongue_bind_thickness_end/2],
+						v2_max=[ wedge_end/2             , box_size[2]/2+tongue_bind_thickness_end/2],
+						r=wedge_r, edges_bottom=[0,1,0,1],  edges_top=[0,1,0,1], edges_side=0
+					);
+					
+					if (link_type=="tongue long hidden")
+					{
+						translate_x(shaft_length+10 + screw_cylinder_depth+screw_depth)
+						cube_extend ([wall+gap_component,100,100], align=-X);
+					}
+				}
 			}
 			if (link_type=="clips")
 			{
 				clips_trace=[];
 				
-				
+				echo ("TODO tongue clips");
 			}
 		}
-		//
+		
 		if (glue_bags==true)
-		place_copy_x(place_list)
-		render(convexity=2)
-		rotate_y(-90)
-		bag (
-			translate_x_points(l=tongue_bind_thickness_end/2, list=
-				square_curve([box_size[2], box_size[1]], align=[0,0])
-				)
-			, side=0.5
-		);
+		{
+			place_copy_x(place_list)
+			render(convexity=2)
+			rotate_y(-90)
+			bag (
+				translate_x_points(l=tongue_bind_thickness_end/2, list=
+					square_curve([box_size[2], box_size[1]], align=[0,0])
+					)
+				, side=0.5
+			);
+		}
 	}
 }
 
@@ -329,31 +341,42 @@ module split_screw_part ()
 			translate_z(tongue_bind_thickness_end/2)
 			cube_extend (box_size_gap, align=[1,0,0]);
 			//
-			if (link_type=="tongue through" || link_type=="clips")
+			if (link_type=="tongue through" || link_type=="tongue long hidden")
 			{
-				translate_x(box_size[0])
-				rotate_z(-90)
-				wedge_rounded(
-					v_min=[-wedge_begin_gap/2,0          ,-box_size_gap[2]/2+tongue_bind_thickness_end/2],
-					v_max=[ wedge_begin_gap/2,screw_depth, box_size_gap[2]/2+tongue_bind_thickness_end/2],
-					v2_min=[-wedge_end_gap/2             ,-box_size_gap[2]/2+tongue_bind_thickness_end/2],
-					v2_max=[ wedge_end_gap/2             , box_size_gap[2]/2+tongue_bind_thickness_end/2],
-					r=wedge_r+gap_component, edges_bottom=[0,1,0,1],  edges_top=[0,1,0,1], edges_side=0
-				);
+				difference()
+				{
+					translate_x(box_size[0])
+					rotate_z(-90)
+					wedge_rounded(
+						v_min=[-wedge_begin_gap/2,0          ,-box_size_gap[2]/2+tongue_bind_thickness_end/2],
+						v_max=[ wedge_begin_gap/2,screw_depth, box_size_gap[2]/2+tongue_bind_thickness_end/2],
+						v2_min=[-wedge_end_gap/2             ,-box_size_gap[2]/2+tongue_bind_thickness_end/2],
+						v2_max=[ wedge_end_gap/2             , box_size_gap[2]/2+tongue_bind_thickness_end/2],
+						r=wedge_r+gap_component, edges_bottom=[0,1,0,1],  edges_top=[0,1,0,1], edges_side=0
+					);
+					
+					if (link_type=="tongue long hidden")
+					{
+						translate_x(shaft_length+10 + screw_cylinder_depth+screw_depth)
+						cube_extend ([wall,100,100], align=-X);
+					}
+				}
 			}
 		}
-		//
+		
 		if (glue_bags==true)
-		place_copy_x(place_list)
-		render(convexity=2)
-		rotate_y(-90)
-		bag (
-			reverse(
-			translate_x_points(l=tongue_bind_thickness_end/2, list=
-				square_curve([box_size_gap[2], box_size_gap[1]], align=[0,0])
-				) )
-			, side=0.5
-		);
+		{
+			place_copy_x(place_list)
+			render(convexity=2)
+			rotate_y(-90)
+			bag (
+				reverse(
+				translate_x_points(l=tongue_bind_thickness_end/2, list=
+					square_curve([box_size_gap[2], box_size_gap[1]], align=[0,0])
+					) )
+				, side=0.5
+			);
+		}
 	}
 	intersection()
 	{
