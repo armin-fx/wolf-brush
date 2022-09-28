@@ -423,7 +423,7 @@ module tongue ()
 		mirror_copy_z()
 		translate_z(-tongue_thickness/2)
 		rotate_x(90)
-		wedge_simple([tongue_chamfer_length, tongue_chamfer_heigth], tongue_width, center=true);
+		wedge_simple([tongue_chamfer_length, tongue_chamfer_heigth, tongue_width], align=X+Y);
 		
 		translate_x (tongue_hole_begin + tonque_hole_length/2)
 		intersection()
@@ -567,9 +567,13 @@ module bag (trace, depth=glue_bag_depth, slot=glue_bag_slot, side=0, extra=extra
 
 //--------------------------------------------------------------------------------
 
-module wedge_simple (size, h, tip_y=0, center)
+module wedge_simple (size, tip_y=0, center, align)
 {
-	linear_extrude(height=h, center=center)
+	Size  = parameter_size_3d (size);
+	Align = parameter_align   (align, [1,1,1], center);
+	
+	translate ([for (i=[0:1:len(Size)-1]) (Align[i]-1)*Size[i]/2 ])
+	linear_extrude(height=size[2])
 	polygon([
 		[0,0],
 		[size[0], tip_y],
