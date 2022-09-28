@@ -50,9 +50,10 @@ tongue_bind_thickness_end   = 1.3;
 
 /* [Shaft] */
 
-shaft_length    =  1;
-shaft_width     = 29;
-shaft_thickness = 23;
+shaft_length      = 11;
+shaft_bind_length =  1;
+shaft_width       = 29;
+shaft_thickness   = 23;
 // Parameter of superellipse
 shaft_n = 2.2;
 
@@ -73,7 +74,7 @@ screw_outer_diameter = 34;
 
 $fd=0.01;
 
-screw_length = shaft_length+10+screw_cylinder_depth+screw_depth;
+screw_length = shaft_length+screw_cylinder_depth+screw_depth;
 
 shaft_curve = superellipse_curve (interval=[0,360], r=0.5, a=[shaft_thickness,shaft_width], n=shaft_n, slices="x");
 
@@ -187,7 +188,7 @@ module screw_support ()
 }
 
 box_size=[
-	shaft_length+10+screw_cylinder_depth,
+	shaft_length+screw_cylinder_depth,
 	2*tongue_bind_thickness_end+tongue_width,
 	tongue_thickness+tongue_bind_thickness_end
 ];
@@ -244,8 +245,8 @@ module split_tongue_part ()
 					
 					if (link_type=="tongue long hidden")
 					{
-						translate_x(shaft_length+10 + screw_cylinder_depth+screw_depth)
-						cube_extend ([wall+gap_component,100,100], align=-X);
+						translate_x(shaft_length + screw_cylinder_depth+screw_depth)
+						cube_extend ([wall+gap_component, screw_outer_diameter,screw_outer_diameter], align=-X);
 					}
 				}
 			}
@@ -357,8 +358,8 @@ module split_screw_part ()
 					
 					if (link_type=="tongue long hidden")
 					{
-						translate_x(shaft_length+10 + screw_cylinder_depth+screw_depth)
-						cube_extend ([wall,100,100], align=-X);
+						translate_x(shaft_length + screw_cylinder_depth+screw_depth)
+						cube_extend ([wall, screw_outer_diameter,screw_outer_diameter], align=-X);
 					}
 				}
 			}
@@ -453,29 +454,29 @@ module tongue_bind()
 module screw ()
 {
 	rotate_y(90)
-	linear_extrude(height=shaft_length)
+	linear_extrude(height=shaft_bind_length)
 	polygon(shaft_curve);
 	
-	translate_x(shaft_length)
+	translate_x(shaft_bind_length)
 	hull()
 	{
 		rotate_y(90)
 		linear_extrude(height=epsilon)
 		polygon(shaft_curve);
 		
-		translate_x(9)
+		translate_x(shaft_length - 2*shaft_bind_length)
 		rotate_y(90)
 		cylinder_extend(d=screw_outer_diameter, h=epsilon);
 	}
-	translate_x(shaft_length+9)
+	translate_x(shaft_length - shaft_bind_length)
 	rotate_y(90)
-	cylinder_extend(d=screw_outer_diameter, h=1);
+	cylinder_extend(d=screw_outer_diameter, h=shaft_bind_length);
 	
-	translate_x(shaft_length+10)
+	translate_x(shaft_length)
 	rotate_y(90)
 	cylinder_extend(h=screw_cylinder_depth, d=screw_diameter_begin);
 	//
-	translate_x(shaft_length+10 + screw_cylinder_depth)
+	translate_x(shaft_length + screw_cylinder_depth)
 	//rotate_x(90)
 	rotate_y(90)
 	render(convexity=6)
