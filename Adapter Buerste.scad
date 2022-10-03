@@ -10,7 +10,7 @@ glue_bags = true;
 
 debug = "none"; // ["none", "slice top", "slice side"]
 
-test = "none"; // ["none", "clips", "tooth_profile", "tooth_profile_end"]
+test = "none"; // ["none", "clips", "tooth_profile", "tooth_profile_end", "bag_pane", "bag"]
 
 /* [3D-Print] */
 
@@ -30,6 +30,7 @@ gap_component = 0.12;
 
 glue_bag_depth = 0.25; // [0.05:0.05:1]
 glue_bag_slot  = 1.0; // [0.1:0.1:3]
+glue_bag_side_distance = 1.5; // [0:0.5:5]
 
 /* [Tongue] */
 
@@ -249,8 +250,8 @@ module split_tongue_part ()
 					
 					if (link_type=="tongue long hidden")
 					{
-						translate_x(shaft_length + screw_cylinder_depth+screw_depth)
-						cube_extend ([wall+gap_component, screw_outer_diameter,screw_outer_diameter], align=-X);
+						translate_x(shaft_length + screw_cylinder_depth+screw_depth + extra)
+						cube_extend ([wall+gap_component+extra, screw_outer_diameter,screw_outer_diameter], align=-X);
 					}
 				}
 			}
@@ -264,15 +265,42 @@ module split_tongue_part ()
 		
 		if (glue_bags==true)
 		{
-			place_copy_x(place_list)
-			render(convexity=2)
-			rotate_y(-90)
-			bag (
-				translate_x_points(l=tongue_bind_thickness_end/2, list=
+			// cube
+			if (glue_bag_side_distance==0)
+			{
+				place_copy_x(place_list)
+				render(convexity=2)
+				rotate_y(-90)
+				bag_trace (
+					translate_x_points(l=tongue_bind_thickness_end/2, list=
+						square_curve([box_size[2], box_size[1]], align=[0,0])
+						)
+				);
+			}
+			else
+			{
+				bag_cube_trace =
+					rotate_y_points(a=-90, list=
+					projection_points (plane=false, list=
+					translate_x_points(l=tongue_bind_thickness_end/2, list=
 					square_curve([box_size[2], box_size[1]], align=[0,0])
+					)));
+				bag_line_list = points_to_lines (bag_cube_trace, closed=true);
+				bag_lines_list = [for (x=place_list) each [ for (p=bag_line_list) translate_x_points (p, x) ] ];
+				bag_lines_part = [for (l=bag_lines_list)
+					let (
+						length = length_line (l)
 					)
-				, side=0.5
-			);
+					[ lerp (l[0], l[1],        glue_bag_side_distance, [0,length])
+					, lerp (l[0], l[1], length-glue_bag_side_distance, [0,length])]
+				];
+				
+				render(convexity=2)
+				for (line=bag_lines_part)
+				{	
+					bag_line(line, rotational=X);
+				}
+			}
 		}
 	}
 }
@@ -371,16 +399,42 @@ module split_screw_part ()
 		
 		if (glue_bags==true)
 		{
-			place_copy_x(place_list)
-			render(convexity=2)
-			rotate_y(-90)
-			bag (
-				reverse(
-				translate_x_points(l=tongue_bind_thickness_end/2, list=
+			if (glue_bag_side_distance==0)
+			{
+				place_copy_x(place_list)
+				render(convexity=2)
+				rotate_y(-90)
+				bag_trace (
+					reverse(
+					translate_x_points(l=tongue_bind_thickness_end/2, list=
+						square_curve([box_size_gap[2], box_size_gap[1]], align=[0,0])
+						) )
+				);
+			}
+			else
+			{
+				bag_cube_trace =
+					rotate_y_points(a=-90, list=
+					projection_points (plane=false, list=
+					translate_x_points(l=tongue_bind_thickness_end/2, list=
 					square_curve([box_size_gap[2], box_size_gap[1]], align=[0,0])
-					) )
-				, side=0.5
-			);
+					)));
+				bag_line_list = points_to_lines (bag_cube_trace, closed=true);
+				bag_lines_list = [for (x=place_list) each [ for (p=bag_line_list) translate_x_points (p, x) ] ];
+				bag_lines_part = [for (l=bag_lines_list)
+					let (
+						length = length_line (l)
+					)
+					[ lerp (l[0], l[1],        glue_bag_side_distance, [0,length])
+					, lerp (l[0], l[1], length-glue_bag_side_distance, [0,length])]
+				];
+				
+				render(convexity=2)
+				for (line=bag_lines_part)
+				{	
+					bag_line(line, rotational=-X);
+				}
+			}
 		}
 	}
 	intersection()
@@ -632,10 +686,19 @@ if (component=="test" && test=="tooth_profile_end")
 	build_object (a);
 }
 
-// side = value between 0...1, 0.5 = centered slot
+if (component=="test" && test=="bag_pane")
+{
+	bag_pane();
+}
+if (component=="test" && test=="bag")
+{
+	bag_line([[0,1], [1,10]]);
+}
+
+// side = value between -1...1, 0 = centered slot
 module bag_pane (depth=glue_bag_depth, slot=glue_bag_slot, side=0, extra=extra)
 {
-	translate_y( (2*depth+slot) * side )
+	translate_y( (depth+slot/2) * (side+1) )
 	polygon([
 		[extra , 0],
 		[0     , 0],
@@ -646,10 +709,40 @@ module bag_pane (depth=glue_bag_depth, slot=glue_bag_slot, side=0, extra=extra)
 	]);
 }
 
-module bag (trace, depth=glue_bag_depth, slot=glue_bag_slot, side=0, extra=extra)
+module bag_trace (trace, depth=glue_bag_depth, slot=glue_bag_slot, side=0, extra=extra)
 {
 	plain_trace_connect_extrude (trace)
-	bag_pane (depth, slot, side);
+	bag_pane (depth, slot, side, extra);
+}
+
+module bag (length, ends=true)
+{
+	intersection()
+	{
+		linear_extrude (length)
+		bag_pane();
+		
+		if (ends==true)
+		rotate_x(90)
+		linear_extrude (glue_bag_slot+2*glue_bag_depth, center=true)
+		bag_pane(slot=length-2*glue_bag_depth, side=1);
+	}
+}
+
+// extrudiert und dreht das 2D-Objekt die Linie 'line' entlang
+// Die X-Achse ist die Rotationsrichtung, wird um die Pfeilrichtung nach den Punkt 'rotational' gedreht
+module bag_line (line, rotational=[1,0,0], ends=true)
+{
+	base_vector = [0,1];
+	origin      = fill_missing_list (line[0]           , [0,0,0]);
+	line_vector = fill_missing_list (line[1] - line[0] , [0,0,0]);
+	up_to_z     = rotate_backwards_to_vector_points ( [rotational], line_vector);
+	plane       = projection_points (up_to_z);
+	angle_base  = rotation_vector (base_vector, plane[0]);
+	//
+	translate (origin)
+	rotate_to_vector (line_vector, angle_base)
+	bag (norm(line_vector), ends);
 }
 
 //--------------------------------------------------------------------------------
