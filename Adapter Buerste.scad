@@ -2,13 +2,15 @@ include <banded.scad>
 
 /* [Assembly] */
 
-component = "complete"; // ["complete", "parts together", "tongue part", "screw part", "test_clips"]
+component = "complete"; // ["complete", "parts together", "tongue part", "screw part", "test"]
 
-link_type = "tongue through"; // ["tongue short", "tongue long hidden", "tongue through", "clips"]
+link_type = "tongue long hidden"; // ["tongue short", "tongue long hidden", "tongue through", "clips"]
 
 glue_bags = true;
 
 debug = "none"; // ["none", "slice top", "slice side"]
+
+test = "none"; // ["none", "clips", "tooth_profile", "tooth_profile_end"]
 
 /* [3D-Print] */
 
@@ -58,6 +60,8 @@ shaft_thickness   = 23;
 shaft_n = 2.2;
 
 /* [Screw] */
+
+screw_type = "half width"; // ["half width", "circle"]
 
 screw_diameter_begin = 27;
 screw_diameter_end   = 21;
@@ -279,7 +283,7 @@ test_trace=[
 	[11,2],
 	[11,3]
 ];
-if (component=="test_clips")
+if (component=="test" && test=="clips")
 {
 	clips_trace(test_trace) clips_side_plane_tongue();
 }
@@ -453,6 +457,12 @@ module tongue_bind()
 
 module screw ()
 {
+	slices =
+		quantize (raster=12, value=
+		get_slices_circle_current_x (
+		max (screw_outer_diameter, screw_diameter_begin, screw_diameter_end
+	)));
+	
 	rotate_y(90)
 	linear_extrude(height=shaft_bind_length)
 	polygon(shaft_curve);
@@ -466,35 +476,36 @@ module screw ()
 		
 		translate_x(shaft_length - 2*shaft_bind_length)
 		rotate_y(90)
-		cylinder_extend(d=screw_outer_diameter, h=epsilon);
+		cylinder_extend(d=screw_outer_diameter, h=epsilon, slices=slices);
 	}
 	translate_x(shaft_length - shaft_bind_length)
 	rotate_y(90)
-	cylinder_extend(d=screw_outer_diameter, h=shaft_bind_length);
+	cylinder_extend(d=screw_outer_diameter, h=shaft_bind_length, slices=slices);
 	
 	translate_x(shaft_length)
 	rotate_y(90)
-	cylinder_extend(h=screw_cylinder_depth, d=screw_diameter_begin);
+	cylinder_extend(h=screw_cylinder_depth, d=screw_diameter_begin, slices=slices);
+	//
+	screw_depth_end    = (floor (screw_depth/screw_pitch) - (screw_profile_end_cut_value)) * screw_pitch;
+	screw_diameter_mid = bezier_1 (screw_depth_end/screw_depth, [screw_diameter_begin,screw_diameter_end]);
 	//
 	translate_x(shaft_length + screw_cylinder_depth)
-	//rotate_x(90)
 	rotate_y(90)
-	render(convexity=6)
+	rotate_z(screw_rotation_begin)
+	//render(convexity=6)
 	difference()
 	{
 		//fn = 24;
 		//
-		cylinder_extend(h=screw_depth, d1=screw_diameter_begin, d2=screw_diameter_end);
+		cylinder_extend(h=screw_depth, d1=screw_diameter_begin, d2=screw_diameter_end, slices=slices);
 		
 		// Helix Teil module:
 		/*
 		helix_extrude (
 			height=screw_depth, pitch=screw_pitch, r=[screw_diameter_begin,screw_diameter_end]/2
-			, slices="x", convexity=0
+			, orientation=true
+			, slices=slices, convexity=0
 		)
-		rotate_to_vector([-(screw_diameter_begin-screw_diameter_end)/2,screw_depth], d=2)
-		rotate(-90)
-		translate_y (screw_tooth_diameter/2)
 		tooth_profile_cut();
 		//*/
 		
@@ -503,46 +514,122 @@ module screw ()
 		build_object(
 			let(
 				a = tooth_profile_cut (),
-				b = translate_y_points      (a, screw_tooth_diameter/2),
-				c = rotate_points           (b, -90),
-				d = rotate_to_vector_points (c, [-(screw_diameter_begin-screw_diameter_end)/2,screw_depth]),
-				//
-				e = helix_extrude_points ( list=d
-					, height=screw_depth, pitch=screw_pitch, r=[screw_diameter_begin,screw_diameter_end]/2
-					, slices="x")
+				e = helix_extrude_points ( list=a
+					, height=screw_depth+screw_pitch, pitch=screw_pitch
+					, r=[
+						screw_diameter_begin,
+						lerp (screw_diameter_begin,screw_diameter_end,(screw_depth+screw_pitch)/screw_depth)
+						] / 2
+					, orientation=true
+					, slices=slices)
 			) e
+			, convexity=5
+		);
+		//
+		build_object(
+			let(
+				a = tooth_profile_end_cut (),
+				e = helix_extrude_points ( list=a
+					, height=screw_depth-screw_depth_end, pitch=screw_pitch
+					, r=[
+						screw_diameter_mid,
+						screw_diameter_end
+						] / 2
+					, orientation=true
+					, slices=slices),
+				f = translate_z (e, screw_depth_end),
+				g = rotate_z (f, 360 * ((screw_depth_end/screw_pitch)%1))
+			) g
 			, convexity=5
 		);
 		//*/
 	}
 }
 
-module tooth_profile_cut ()
-{
-	polygon( tooth_profile_cut() );
-}
+screw_rotation_begin =
+	screw_type=="half width" ? 0 :
+	screw_type=="circle"     ? 0 :
+	0
+;
+screw_profile_end_cut_value =
+	screw_type=="half width" ? 0.25 :
+	screw_type=="circle"     ? 0.25 :
+	0
+;
+module   tooth_profile_cut () { polygon( tooth_profile_cut () ); }
 function tooth_profile_cut () =
+	screw_type=="half width" ? tooth_profile_cut_half_width () :
+	screw_type=="circle"     ? tooth_profile_cut_circle () :
+	undef
+;
+//
+module   tooth_profile_end_cut () { polygon( tooth_profile_end_cut () ); }
+function tooth_profile_end_cut () =
+	screw_type=="half width" ? tooth_profile_end_cut_half_width () :
+	screw_type=="circle"     ? tooth_profile_end_cut_circle () :
+	undef
+;
+
+screw_tooth_edge_radius = screw_tooth_diameter/2 * 0.49;
+//
+function tooth_profile_cut_half_width () =
 	let (
 		$fd=0.005,
-		r_edge=screw_tooth_diameter/2 * 0.5
+		r_edge=screw_tooth_edge_radius,
+		screw_tooth_offset = screw_tooth_diameter
 	)
+	translate_y_points (l=r_edge - screw_tooth_offset, list=
 	rotate_points( a=90, list=concat(
-		 [[-r_edge, -extra]]
+		 [	[-r_edge, -extra]]
 		//
-		,translate_points( circle_curve (r=r_edge, angle=[90, 270], slices="x") , [-r_edge, r_edge])
+		,translate_points( circle_curve (r=r_edge, angle=[90, 270], slices="x"),
+			[-r_edge, r_edge])
 		,reverse(
-		 translate_points( circle_curve (r=r_edge, angle=[90, 90 ], slices="x") , [ r_edge, screw_tooth_depth-r_edge]))
+		 translate_points( circle_curve (r=r_edge, angle=[90, 90 ], slices="x"),
+			[ r_edge, screw_tooth_depth-r_edge]))
 		//
 		,reverse(
-		 translate_points( circle_curve (r=r_edge, angle=[90, 0  ], slices="x") , [screw_tooth_diameter-r_edge, screw_tooth_depth-r_edge]))
-		,translate_points( circle_curve (r=r_edge, angle=[90, 180], slices="x") , [screw_tooth_diameter+r_edge, r_edge])
+		 translate_points( circle_curve (r=r_edge, angle=[90, 0  ], slices="x"),
+			[screw_tooth_diameter-r_edge, screw_tooth_depth-r_edge]))
+		,translate_points( circle_curve (r=r_edge, angle=[90, 180], slices="x"),
+			[screw_tooth_diameter+r_edge, r_edge])
 		//
-		,[[screw_tooth_diameter+r_edge, -extra]]
-	))
+		,[	[screw_tooth_diameter+r_edge, -extra]]
+	)))
 ;
-module tooth_profile_cut_ ()
+function tooth_profile_end_cut_half_width () =
+	let (
+		screw_tooth_offset = screw_tooth_diameter
+	)
+	translate_points (v=[extra, 2*screw_tooth_edge_radius - screw_tooth_offset], list=
+	square_curve ([screw_tooth_depth+extra, screw_pitch], align=-X+Y)
+	)
+;
+//
+function tooth_profile_cut_circle () =
+	translate_y_points (l=-screw_tooth_diameter/2, list=
+	circle_curve (d=screw_tooth_diameter, align=Y, slices="x")
+	)
+;
+function tooth_profile_end_cut_circle () =
+	translate_points (v=[extra, 0], list=
+	square_curve ([screw_tooth_diameter/2+extra, screw_pitch], align=-X+Y)
+	)
+;
+
+if (component=="test" && test=="tooth_profile")
 {
-	circle_extend(d=screw_tooth_diameter);
+	a = tooth_profile_cut ();
+	b = rotate_points           (a, -90);
+	c = rotate_to_vector_points (b, [-(screw_diameter_begin-screw_diameter_end)/2,screw_depth]);
+	build_object (a);
+}
+if (component=="test" && test=="tooth_profile_end")
+{
+	a = tooth_profile_end_cut ();
+	b = rotate_points           (a, -90);
+	c = rotate_to_vector_points (b, [-(screw_diameter_begin-screw_diameter_end)/2,screw_depth]);
+	build_object (a);
 }
 
 // side = value between 0...1, 0.5 = centered slot
@@ -598,4 +685,13 @@ module center (size, axis)
 	children();
 }
 
+function align_points (list, align, center) =
+	let (
+		data_box = get_bounding_box_points (list),
+		size     = data_box[0],
+		min_pos  = data_box[1],
+		Align    = parameter_align (align, [1,1,1], center)
+	)
+	translate_points (list, - min_pos - size/2 + multiply_each (Align, size) )
+;
 
