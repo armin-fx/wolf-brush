@@ -197,10 +197,16 @@ box_size=[
 	2*tongue_bind_thickness_end+tongue_width,
 	tongue_thickness+tongue_bind_thickness_end
 ];
-place_list=[
+place_list_cube=[
 	2.5,
 	       box_size[0]/2,
 	-2.5 + box_size[0]
+];
+place_list_wedge=[
+	(screw_depth-wall) - 13,
+	(screw_depth-wall) -  9.5,
+	(screw_depth-wall) -  6,
+	(screw_depth-wall) -  2.5
 ];
 wedge_begin = box_size[1] - 3;
 wedge_end   = (screw_diameter_end-wall*2)
@@ -268,12 +274,12 @@ module split_tongue_part ()
 			// cube
 			if (glue_bag_side_distance==0)
 			{
-				place_copy_x(place_list)
+				place_copy_x(place_list_cube)
 				render(convexity=2)
 				rotate_y(-90)
 				bag_trace (
 					translate_x_points(l=tongue_bind_thickness_end/2, list=
-						square_curve([box_size[2], box_size[1]], align=[0,0])
+						square_curve([box_size[2], box_size[1]], center=true)
 						)
 				);
 			}
@@ -283,10 +289,10 @@ module split_tongue_part ()
 					rotate_y_points(a=-90, list=
 					projection_points (plane=false, list=
 					translate_x_points(l=tongue_bind_thickness_end/2, list=
-					square_curve([box_size[2], box_size[1]], align=[0,0])
+					square_curve([box_size[2], box_size[1]], center=true)
 					)));
 				bag_line_list = points_to_lines (bag_cube_trace, closed=true);
-				bag_lines_list = [for (x=place_list) each [ for (p=bag_line_list) translate_x_points (p, x) ] ];
+				bag_lines_list = [for (x=place_list_cube) each [ for (p=bag_line_list) translate_x_points (p, x) ] ];
 				bag_lines_part = [for (l=bag_lines_list)
 					let (
 						length = length_line (l)
@@ -299,6 +305,53 @@ module split_tongue_part ()
 				for (line=bag_lines_part)
 				{	
 					bag_line(line, rotational=X);
+				}
+			}
+			// wedge
+			translate_x(box_size[0])
+			{
+				wedge_left_trace  =
+					rotate_y_points(a=-90, list=
+					projection_points (plane=false, list=
+					translate_x_points(l=tongue_bind_thickness_end/2, list=
+					square_curve ([box_size[2], wedge_begin], center=true)
+					)));
+				wedge_right_trace =
+					translate_x_points(l=screw_depth, list=
+					rotate_y_points(a=-90, list=
+					projection_points (plane=false, list=
+					translate_x_points(l=tongue_bind_thickness_end/2, list=
+					square_curve ([box_size[2], wedge_end], center=true)
+					))));
+				size_wedge_trace = len(wedge_left_trace);
+				wedge_direction_list =
+					[ for (i=[0:1:size_wedge_trace-1])
+					  lerp( wedge_right_trace[i], wedge_right_trace[(i+1)%size_wedge_trace], 0.5)
+					- lerp( wedge_left_trace [i], wedge_left_trace [(i+1)%size_wedge_trace], 0.5)
+					];
+				bag_trace_list =
+					[ for (x=place_list_wedge) lerp (wedge_left_trace, wedge_right_trace, x, [0,screw_depth]) ]
+				;
+				bag_line_list = [ for (t=bag_trace_list) each points_to_lines (t, closed=true) ];
+				bag_lines_part = [for (l=bag_line_list)
+					let (
+						length = length_line (l)
+					)
+					[ lerp (l[0], l[1],        glue_bag_side_distance, [0,length])
+					, lerp (l[0], l[1], length-glue_bag_side_distance, [0,length])]
+				];
+				
+			//	#show_trace(wedge_left_trace,  closed=true);
+			//	#show_trace(wedge_right_trace, closed=true);
+			//	#show_lines(bag_lines_part);
+				
+				render(convexity=2)
+				for (i=[0:1:len(bag_lines_part)-1])
+				{
+					line      = bag_lines_part[i];
+					direction = wedge_direction_list[i%size_wedge_trace];
+					
+					bag_line(line, rotational=direction);
 				}
 			}
 		}
@@ -399,9 +452,10 @@ module split_screw_part ()
 		
 		if (glue_bags==true)
 		{
+			// cube
 			if (glue_bag_side_distance==0)
 			{
-				place_copy_x(place_list)
+				place_copy_x(place_list_cube)
 				render(convexity=2)
 				rotate_y(-90)
 				bag_trace (
@@ -420,7 +474,7 @@ module split_screw_part ()
 					square_curve([box_size_gap[2], box_size_gap[1]], align=[0,0])
 					)));
 				bag_line_list = points_to_lines (bag_cube_trace, closed=true);
-				bag_lines_list = [for (x=place_list) each [ for (p=bag_line_list) translate_x_points (p, x) ] ];
+				bag_lines_list = [for (x=place_list_cube) each [ for (p=bag_line_list) translate_x_points (p, x) ] ];
 				bag_lines_part = [for (l=bag_lines_list)
 					let (
 						length = length_line (l)
@@ -433,6 +487,49 @@ module split_screw_part ()
 				for (line=bag_lines_part)
 				{	
 					bag_line(line, rotational=-X);
+				}
+			}
+			// wedge
+			translate_x(box_size[0])
+			{
+				wedge_left_trace  =
+					rotate_y_points(a=-90, list=
+					projection_points (plane=false, list=
+					translate_x_points(l=tongue_bind_thickness_end/2, list=
+					square_curve ([box_size_gap[2], wedge_begin_gap], center=true)
+					)));
+				wedge_right_trace =
+					translate_x_points(l=screw_depth, list=
+					rotate_y_points(a=-90, list=
+					projection_points (plane=false, list=
+					translate_x_points(l=tongue_bind_thickness_end/2, list=
+					square_curve ([box_size_gap[2], wedge_end_gap], center=true)
+					))));
+				size_wedge_trace = len(wedge_left_trace);
+				wedge_direction_list =
+					[ for (i=[0:1:size_wedge_trace-1])
+					  lerp( wedge_right_trace[i], wedge_right_trace[(i+1)%size_wedge_trace], 0.5)
+					- lerp( wedge_left_trace [i], wedge_left_trace [(i+1)%size_wedge_trace], 0.5)
+					];
+				bag_trace_list =
+					[ for (x=place_list_wedge) lerp (wedge_left_trace, wedge_right_trace, x, [0,screw_depth]) ]
+				;
+				bag_line_list = [ for (t=bag_trace_list) each points_to_lines (t, closed=true) ];
+				bag_lines_part = [for (l=bag_line_list)
+					let (
+						length = length_line (l)
+					)
+					[ lerp (l[0], l[1],        glue_bag_side_distance, [0,length])
+					, lerp (l[0], l[1], length-glue_bag_side_distance, [0,length])]
+				];
+				
+				render(convexity=2)
+				for (i=[0:1:len(bag_lines_part)-1])
+				{
+					line      = bag_lines_part[i];
+					direction = wedge_direction_list[i%size_wedge_trace];
+					
+					bag_line(line, rotational=-direction);
 				}
 			}
 		}
