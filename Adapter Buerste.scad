@@ -18,7 +18,7 @@ type = "component"; // ["component", "printable"]
 
 support             = false;
 support_gap_z       = 0.1;
-support_gap_xy      = 0.5;
+support_gap_xy      = 1.2;
 support_line_width  = 0.7;
 support_brim_height = 0.4;
 
@@ -28,7 +28,7 @@ wall = 3;
 
 gap_component = 0.12;
 
-glue_bag_depth = 0.25; // [0.05:0.05:1]
+glue_bag_depth = 0.30; // [0.05:0.05:1]
 glue_bag_slot  = 1.0; // [0.1:0.1:3]
 glue_bag_side_distance = 1.5; // [0:0.5:5]
 
@@ -65,7 +65,7 @@ shaft_n = 2.2;
 screw_type = "half width"; // ["half width", "circle"]
 
 screw_diameter_begin = 27;
-screw_diameter_end   = 21;
+screw_diameter_end   = 21.5;
 screw_depth          = 24;
 screw_cylinder_depth =  1;
 //
@@ -155,7 +155,7 @@ module show ()
 
 module screw_support ()
 {
-	color(alpha=0.5)
+	color(alpha=0.3)
 	difference()
 	{
 	union()
@@ -698,9 +698,9 @@ module screw ()
 }
 
 screw_rotation_begin =
-	screw_type=="half width" ? 0 :
-	screw_type=="circle"     ? 0 :
-	0
+	screw_type=="half width" ? 90 :
+	screw_type=="circle"     ? 90 :
+	90
 ;
 screw_profile_end_cut_value =
 	screw_type=="half width" ? 0.25 :
