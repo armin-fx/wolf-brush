@@ -46,6 +46,7 @@ tongue_hole_width    = 11.4;
 tonque_hole_length   = 13.0;
 tongue_hole_straight =  6;
 tongue_hole_begin = 5;
+tongue_edges_radius = 1; // [0:0.1:3]
 //
 tongue_bind_length          = 3;
 tongue_bind_thickness_begin = 0.3;
@@ -557,7 +558,7 @@ module tongue ()
 	{
 		cube_rounded ([tongue_length, tongue_width, tongue_thickness]
 			,align=[1,0,0]
-			,r=1
+			,r=tongue_edges_radius
 			,edges_side  =0
 			,edges_bottom=[1,0,1,0]
 			,edges_top   =[1,0,1,0]
