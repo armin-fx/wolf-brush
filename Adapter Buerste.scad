@@ -298,6 +298,7 @@ module split_tongue_part ()
 					let (
 						length = length_line (l)
 					)
+					if (length-2*glue_bag_side_distance > 0)
 					[ lerp (l[0], l[1],        glue_bag_side_distance, [0,length])
 					, lerp (l[0], l[1], length-glue_bag_side_distance, [0,length])]
 				];
@@ -338,6 +339,7 @@ module split_tongue_part ()
 					let (
 						length = length_line (l)
 					)
+					if (length-2*glue_bag_side_distance > 0)
 					[ lerp (l[0], l[1],        glue_bag_side_distance, [0,length])
 					, lerp (l[0], l[1], length-glue_bag_side_distance, [0,length])]
 				];
@@ -480,6 +482,7 @@ module split_screw_part ()
 					let (
 						length = length_line (l)
 					)
+					if (length-2*glue_bag_side_distance > 0)
 					[ lerp (l[0], l[1],        glue_bag_side_distance, [0,length])
 					, lerp (l[0], l[1], length-glue_bag_side_distance, [0,length])]
 				];
@@ -520,6 +523,7 @@ module split_screw_part ()
 					let (
 						length = length_line (l)
 					)
+					if (length-2*glue_bag_side_distance > 0)
 					[ lerp (l[0], l[1],        glue_bag_side_distance, [0,length])
 					, lerp (l[0], l[1], length-glue_bag_side_distance, [0,length])]
 				];
@@ -809,7 +813,7 @@ module bag_pane (depth=glue_bag_depth, slot=glue_bag_slot, side=0, extra=extra)
 
 module bag_trace (trace, depth=glue_bag_depth, slot=glue_bag_slot, side=0, extra=extra)
 {
-	plain_trace_connect_extrude (trace)
+	plain_trace_extrude_closed (trace)
 	bag_pane (depth, slot, side, extra);
 }
 
