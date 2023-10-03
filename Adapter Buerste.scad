@@ -310,6 +310,7 @@ module split_tongue_part ()
 				}
 			}
 			// wedge
+			if (link_type=="tongue through" || link_type=="tongue long hidden")
 			translate_x(box_size[0])
 			{
 				wedge_left_trace  =
@@ -494,6 +495,7 @@ module split_screw_part ()
 				}
 			}
 			// wedge
+			if (link_type=="tongue through" || link_type=="tongue long hidden")
 			translate_x(box_size[0])
 			{
 				wedge_left_trace  =
