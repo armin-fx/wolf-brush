@@ -6,10 +6,14 @@ component = "complete"; // ["complete", "parts together", "tongue part", "screw 
 
 link_type = "tongue long hidden"; // ["tongue short", "tongue long hidden", "tongue through", "clips"]
 
+// little grooves filled with glue
 glue_bags = true;
+// space to catch excess glue
+// glue_residue_bag = true;
 
 debug = "none"; // ["none", "slice top", "slice side"]
 
+// set 'component' to "test" to view test objects
 test = "none"; // ["none", "clips", "tooth_profile", "tooth_profile_end", "bag_pane", "bag"]
 
 /* [3D-Print] */
@@ -31,6 +35,8 @@ gap_component = 0.12;
 glue_bag_depth = 0.30; // [0.05:0.05:1]
 glue_bag_slot  = 1.0; // [0.1:0.1:3]
 glue_bag_side_distance = 1.5; // [0:0.5:5]
+
+// glue_residue_size = 1.0;
 
 /* [Tongue] */
 
@@ -705,7 +711,7 @@ module screw ()
 }
 
 screw_rotation_begin =
-	screw_type=="half width" ? 90 :
+	screw_type=="half width" ? 90 - 45:
 	screw_type=="circle"     ? 90 :
 	90
 ;
