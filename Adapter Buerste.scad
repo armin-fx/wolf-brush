@@ -28,7 +28,7 @@ support_brim_height = 0.4; // 0.05
 
 /* [Common] */
 
-wall = 3; // 0.1
+wall = 2.5; // 0.1
 
 gap_component = 0.12;  // 0.01
 
@@ -199,14 +199,28 @@ module screw_support ()
 	}
 }
 
-box_size=[
-	shaft_length+screw_cylinder_depth,
-	2*tongue_bind_thickness_end+tongue_width,
-	tongue_thickness+tongue_bind_thickness_end
+box_size_original=[
+	shaft_length,
+	tongue_width   + 2*tongue_bind_thickness_end,
+	tongue_thickness + tongue_bind_thickness_end
 ];
-place_list_cube=[
-	2.5,
+box_outer_diameter = norm ([box_size_original[1], box_size_original[2]+tongue_bind_thickness_end]);
+box_size=[
+	box_outer_diameter <= screw_diameter_begin - 1.2*wall
+		? box_size_original[0]
+		: box_size_original[0] - wall
+	,box_size_original[1]
+	,box_size_original[2]
+];
+place_list_cube=
+	(box_size[0] > (5 + 3*(glue_bag_slot+2*glue_bag_depth)))
+? [
+	 2.5,
 	       box_size[0]/2,
+	-2.5 + box_size[0]
+]
+: [
+	 2.5,
 	-2.5 + box_size[0]
 ];
 place_list_wedge=[
@@ -215,11 +229,10 @@ place_list_wedge=[
 	(screw_depth-wall) -  6,
 	(screw_depth-wall) -  2.5
 ];
-wedge_begin = box_size[1] - 3;
-wedge_end   = (screw_diameter_end-wall*2)
-	* cos(atan2(box_size[2]/2+tongue_bind_thickness_end/2, screw_diameter_end-wall*2));
+link_endstop_width = 1.5;
 wedge_r = 1.5;
-wedge_raise = 0; // TODO
+wedge_begin = min( reverse_norm( screw_diameter_begin-2*wall, box_size[2]+tongue_bind_thickness_end ), box_size[1]-2*link_endstop_width );
+wedge_end   =      reverse_norm( screw_diameter_end  -2*wall, box_size[2]+tongue_bind_thickness_end );
 
 module split_tongue_part ()
 {
@@ -249,16 +262,27 @@ module split_tongue_part ()
 			//
 			if (link_type=="tongue through" || link_type=="tongue long hidden")
 			{
+				translate_x(shaft_length + screw_cylinder_depth)
+				translate_z(tongue_bind_thickness_end/2)
+				cube_rounded(
+					[	shaft_length-box_size[0] + screw_cylinder_depth
+					,	wedge_begin
+					,	box_size[2]
+					]
+					, align=[-1,0,0]
+					, r=wedge_r, edges_bottom=[1,0,1,0], edges_top=[1,0,1,0], edges_side=0
+				);
+				// wedge
 				difference()
 				{
-					translate_x(box_size[0])
+					translate_x(shaft_length + screw_cylinder_depth)
 					rotate_z(-90)
 					wedge_rounded(
 						v_min=[-wedge_begin/2,0          ,-box_size[2]/2+tongue_bind_thickness_end/2],
 						v_max=[ wedge_begin/2,screw_depth, box_size[2]/2+tongue_bind_thickness_end/2],
 						v2_min=[-wedge_end/2             ,-box_size[2]/2+tongue_bind_thickness_end/2],
 						v2_max=[ wedge_end/2             , box_size[2]/2+tongue_bind_thickness_end/2],
-						r=wedge_r, edges_bottom=[0,1,0,1],  edges_top=[0,1,0,1], edges_side=0
+						r=wedge_r, edges_bottom=[0,1,0,1], edges_top=[0,1,0,1], edges_side=0
 					);
 					
 					if (link_type=="tongue long hidden")
@@ -317,7 +341,7 @@ module split_tongue_part ()
 			}
 			// wedge
 			if (link_type=="tongue through" || link_type=="tongue long hidden")
-			translate_x(box_size[0])
+			translate_x(shaft_length + screw_cylinder_depth)
 			{
 				wedge_left_trace  =
 					rotate_y_points(a=-90, list=
@@ -439,9 +463,20 @@ module split_screw_part ()
 			//
 			if (link_type=="tongue through" || link_type=="tongue long hidden")
 			{
+				translate_x(shaft_length + screw_cylinder_depth)
+				translate_z(tongue_bind_thickness_end/2)
+				cube_rounded(
+					[	shaft_length-box_size[0] + screw_cylinder_depth
+					,	wedge_begin_gap
+					,	box_size_gap[2]
+					]
+					, align=[-1,0,0]
+					, r=wedge_r+gap_component, edges_bottom=[1,0,1,0], edges_top=[1,0,1,0], edges_side=0
+				);
+				// wedge
 				difference()
 				{
-					translate_x(box_size[0])
+					translate_x(shaft_length + screw_cylinder_depth)
 					rotate_z(-90)
 					wedge_rounded(
 						v_min=[-wedge_begin_gap/2,0          ,-box_size_gap[2]/2+tongue_bind_thickness_end/2],
@@ -502,7 +537,7 @@ module split_screw_part ()
 			}
 			// wedge
 			if (link_type=="tongue through" || link_type=="tongue long hidden")
-			translate_x(box_size[0])
+			translate_x(shaft_length + screw_cylinder_depth)
 			{
 				wedge_left_trace  =
 					rotate_y_points(a=-90, list=
