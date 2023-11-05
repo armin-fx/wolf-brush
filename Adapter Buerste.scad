@@ -21,66 +21,66 @@ test = "none"; // ["none", "clips", "tooth_profile", "tooth_profile_end", "bag_p
 type = "component"; // ["component", "printable"]
 
 support             = false;
-support_gap_z       = 0.1;
-support_gap_xy      = 1.2;
-support_line_width  = 0.7;
-support_brim_height = 0.4;
+support_gap_z       = 0.1; // 0.01
+support_gap_xy      = 1.2; // 0.1
+support_line_width  = 0.7; // 0.05
+support_brim_height = 0.4; // 0.05
 
 /* [Common] */
 
-wall = 3;
+wall = 3; // 0.1
 
-gap_component = 0.12;
+gap_component = 0.12;  // 0.01
 
-glue_bag_depth = 0.30; // [0.05:0.05:1]
-glue_bag_slot  = 1.0; // [0.1:0.1:3]
-glue_bag_side_distance = 1.5; // [0:0.5:5]
+glue_bag_depth = 0.30;        // 0.05
+glue_bag_slot  = 1.0;         // 0.1
+glue_bag_side_distance = 1.5; // 0.5
 
 // glue_residue_size = 1.0;
 
 /* [Tongue] */
 
 // original: 76mm
-tongue_length    = 75.5;
-tongue_width     = 18;
-tongue_thickness =  7;
+tongue_length    = 75.5; // 0.1
+tongue_width     = 18;   // 0.1
+tongue_thickness =  7;   // 0.1
 //
-tongue_end_length = 5;
-tongue_chamfer_length = 2;
-tongue_chamfer_heigth = 1;
-tongue_hole_width    = 11.4;
-tonque_hole_length   = 13.0;
-tongue_hole_straight =  6;
-tongue_hole_begin = 5;
-tongue_edges_radius = 1; // [0:0.1:3]
+tongue_end_length = 5;       // 0.1
+tongue_chamfer_length = 2;   // 0.1
+tongue_chamfer_heigth = 1;   // 0.1
+tongue_hole_width    = 11.4; // 0.1
+tonque_hole_length   = 13.0; // 0.1
+tongue_hole_straight =  6;   // 0.1
+tongue_hole_begin = 5;       // 0.1
+tongue_edges_radius = 1;     // 0.1
 //
-tongue_bind_length          = 3;
-tongue_bind_thickness_begin = 0.3;
+tongue_bind_length          = 3;   // 0.1
+tongue_bind_thickness_begin = 0.3; // 0.1
 tongue_bind_thickness_end   = 1.3;
 
 /* [Shaft] */
 
-shaft_length      = 11;
-shaft_bind_length =  1;
-shaft_width       = 29;
-shaft_thickness   = 23;
+shaft_length      = 11; // 0.1
+shaft_bind_length =  1; // 0.1
+shaft_width       = 29; // 0.1
+shaft_thickness   = 23; // 0.1
 // Parameter of superellipse
-shaft_n = 2.2;
+shaft_n = 2.2; // 0.01
 
 /* [Screw] */
 
 screw_type = "half width"; // ["half width", "circle"]
 
-screw_diameter_begin = 27;
-screw_diameter_end   = 21.5;
-screw_depth          = 24;
-screw_cylinder_depth =  1;
+screw_diameter_begin = 27;   // 0.1
+screw_diameter_end   = 21.5; // 0.1
+screw_depth          = 24;   // 0.1
 //
-screw_pitch          = 4;
-screw_tooth_diameter = 2;
-screw_tooth_depth    = 1;
+screw_cylinder_depth =  1;   // 0.1
+screw_outer_diameter = 34;   // 0.1
 //
-screw_outer_diameter = 34;
+screw_pitch          = 4; // 0.1
+screw_tooth_diameter = 2; // 0.1
+screw_tooth_depth    = 1; // 0.1
 
 /* [Hidden] */
 
