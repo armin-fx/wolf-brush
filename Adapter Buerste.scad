@@ -4,7 +4,7 @@ include <banded.scad>
 
 component = "complete"; // ["complete", "parts together", "tongue part", "screw part", "test"]
 
-link_type = "tongue long hidden"; // ["tongue short", "tongue long hidden", "tongue through", "clips"]
+link_type = "tongue through"; // ["tongue through", "tongue long hidden", "tongue short"]
 
 // little grooves filled with glue
 glue_bags = true;

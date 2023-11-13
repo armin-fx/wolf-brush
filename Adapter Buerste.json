@@ -1,16 +1,21 @@
 {
     "parameterSets": {
-        "normal - tongue part - through": {
+        "normal - all": {
+            "component": "parts together",
+            "link_type": "tongue through",
+            "type": "component"
+        },
+         "normal - tongue part": {
             "component": "tongue part",
             "link_type": "tongue through",
             "type": "printable"
         },
-        "normal - screw part - through": {
+        "normal - screw part": {
             "component": "screw part",
             "link_type": "tongue through",
             "type": "printable"
         },
-         "small - parts together - through": {
+         "small - all": {
             "component": "parts together",
             "link_type": "tongue through",
             "screw_cylinder_depth": "8",
@@ -24,7 +29,7 @@
             "screw_rotation_angle": "45",
             "type": "component"
         },
-        "small - tongue part - through": {
+        "small - tongue part": {
             "component": "tongue part",
             "link_type": "tongue through",
             "screw_cylinder_depth": "8",
@@ -38,7 +43,7 @@
             "screw_rotation_angle": "45",
             "type": "printable"
         },
-         "small - screw part - through": {
+         "small - screw part": {
             "component": "screw part",
             "link_type": "tongue through",
             "screw_cylinder_depth": "8",
