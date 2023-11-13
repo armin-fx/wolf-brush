@@ -21,6 +21,7 @@
             "screw_pitch": "4",
             "screw_tooth_depth": "1",
             "screw_tooth_diameter": "2",
+            "screw_rotation_angle": "45",
             "type": "component"
         },
         "small - tongue part - through": {
@@ -34,6 +35,7 @@
             "screw_pitch": "4",
             "screw_tooth_depth": "1",
             "screw_tooth_diameter": "2",
+            "screw_rotation_angle": "45",
             "type": "printable"
         },
          "small - screw part - through": {
@@ -47,6 +49,7 @@
             "screw_pitch": "4",
             "screw_tooth_depth": "1",
             "screw_tooth_diameter": "2",
+            "screw_rotation_angle": "45",
             "type": "printable"
         }
     },
