@@ -82,6 +82,8 @@ screw_pitch          = 4; // 0.1
 screw_tooth_diameter = 2; // 0.1
 screw_tooth_depth    = 1; // 0.1
 
+screw_rotation_angle = 0;
+
 /* [Hidden] */
 
 $fd=0.01;
@@ -685,8 +687,9 @@ module screw ()
 	rotate_y(90)
 	cylinder_extend(h=screw_cylinder_depth, d=screw_diameter_begin, slices=slices);
 	//
-	screw_depth_end    = (floor (screw_depth/screw_pitch) - (screw_profile_end_cut_value)) * screw_pitch;
-	screw_diameter_mid = bezier_1 (screw_depth_end/screw_depth, [screw_diameter_begin,screw_diameter_end]);
+	//screw_depth_end    = (floor (screw_depth/screw_pitch) - (screw_profile_end_cut_value)) * screw_pitch;
+	screw_depth_end    = quantize (screw_depth - screw_pitch*screw_profile_end_cut_value, screw_pitch/8, 0);
+	screw_diameter_mid = lerp (screw_diameter_begin, screw_diameter_end, screw_depth_end/screw_depth);
 	//
 	translate_x(shaft_length + screw_cylinder_depth)
 	rotate_y(90)
@@ -746,9 +749,9 @@ module screw ()
 }
 
 screw_rotation_begin =
-	screw_type=="half width" ? 90 - 45:
-	screw_type=="circle"     ? 90 :
-	90
+	screw_type=="half width" ? 90 - 45 + screw_rotation_angle:
+	screw_type=="circle"     ? 90      + screw_rotation_angle:
+	                           90      + screw_rotation_angle
 ;
 screw_profile_end_cut_value =
 	screw_type=="half width" ? 0.25 :
