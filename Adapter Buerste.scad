@@ -272,7 +272,7 @@ module split_tongue_part ()
 					,	box_size[2]
 					]
 					, align=[-1,0,0]
-					, r=wedge_r, edges_bottom=[1,0,1,0], edges_top=[1,0,1,0], edges_side=0
+					, edges=configure_edges (r=wedge_r, forward=1)
 				);
 				// wedge
 				difference()
@@ -283,8 +283,8 @@ module split_tongue_part ()
 						v_min=[-wedge_begin/2,0          ,-box_size[2]/2+tongue_bind_thickness_end/2],
 						v_max=[ wedge_begin/2,screw_depth, box_size[2]/2+tongue_bind_thickness_end/2],
 						v2_min=[-wedge_end/2             ,-box_size[2]/2+tongue_bind_thickness_end/2],
-						v2_max=[ wedge_end/2             , box_size[2]/2+tongue_bind_thickness_end/2],
-						r=wedge_r, edges_bottom=[0,1,0,1], edges_top=[0,1,0,1], edges_side=0
+						v2_max=[ wedge_end/2             , box_size[2]/2+tongue_bind_thickness_end/2]
+						,edges=configure_edges (r=wedge_r, sideways=1)
 					);
 					
 					if (link_type=="tongue long hidden")
@@ -473,7 +473,7 @@ module split_screw_part ()
 					,	box_size_gap[2]
 					]
 					, align=[-1,0,0]
-					, r=wedge_r+gap_component, edges_bottom=[1,0,1,0], edges_top=[1,0,1,0], edges_side=0
+					, edges=configure_edges (r=wedge_r+gap_component, forward=1)
 				);
 				// wedge
 				difference()
@@ -484,8 +484,8 @@ module split_screw_part ()
 						v_min=[-wedge_begin_gap/2,0          ,-box_size_gap[2]/2+tongue_bind_thickness_end/2],
 						v_max=[ wedge_begin_gap/2,screw_depth, box_size_gap[2]/2+tongue_bind_thickness_end/2],
 						v2_min=[-wedge_end_gap/2             ,-box_size_gap[2]/2+tongue_bind_thickness_end/2],
-						v2_max=[ wedge_end_gap/2             , box_size_gap[2]/2+tongue_bind_thickness_end/2],
-						r=wedge_r+gap_component, edges_bottom=[0,1,0,1],  edges_top=[0,1,0,1], edges_side=0
+						v2_max=[ wedge_end_gap/2             , box_size_gap[2]/2+tongue_bind_thickness_end/2]
+						,edges=configure_edges (r=wedge_r+gap_component, sideways=1)
 					);
 					
 					if (link_type=="tongue long hidden")
@@ -607,10 +607,7 @@ module tongue ()
 	{
 		cube_rounded ([tongue_length, tongue_width, tongue_thickness]
 			,align=[1,0,0]
-			,r=tongue_edges_radius
-			,edges_side  =0
-			,edges_bottom=[1,0,1,0]
-			,edges_top   =[1,0,1,0]
+			,edges=configure_edges (r=tongue_edges_radius, forward=1)
 		);
 		
 		difference()
