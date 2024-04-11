@@ -1,7 +1,7 @@
 {
     "parameterSets": {
-        "normal - all": {
-            "component": "parts together",
+        "normal - complete": {
+            "component": "complete",
             "link_type": "tongue through",
             "type": "component"
         },
@@ -15,8 +15,8 @@
             "link_type": "tongue through",
             "type": "printable"
         },
-         "small - all": {
-            "component": "parts together",
+         "small - complete": {
+            "component": "complete",
             "link_type": "tongue through",
             "screw_cylinder_depth": "8",
             "screw_depth": "25.5",
