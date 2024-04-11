@@ -1,4 +1,3 @@
-include <banded.scad>
 
 /* [Assembly] */
 
@@ -85,6 +84,10 @@ screw_tooth_depth    = 1; // 0.1
 screw_rotation_angle = 0;
 
 /* [Hidden] */
+
+include <banded.scad>
+
+required_version ([2,9,0]);
 
 $fd=0.01;
 
@@ -279,7 +282,7 @@ module split_tongue_part ()
 				{
 					translate_x(shaft_length + screw_cylinder_depth)
 					rotate_z(-90)
-					wedge_rounded(
+					wedge_freecad_rounded(
 						v_min=[-wedge_begin/2,0          ,-box_size[2]/2+tongue_bind_thickness_end/2],
 						v_max=[ wedge_begin/2,screw_depth, box_size[2]/2+tongue_bind_thickness_end/2],
 						v2_min=[-wedge_end/2             ,-box_size[2]/2+tongue_bind_thickness_end/2],
@@ -480,7 +483,7 @@ module split_screw_part ()
 				{
 					translate_x(shaft_length + screw_cylinder_depth)
 					rotate_z(-90)
-					wedge_rounded(
+					wedge_freecad_rounded(
 						v_min=[-wedge_begin_gap/2,0          ,-box_size_gap[2]/2+tongue_bind_thickness_end/2],
 						v_max=[ wedge_begin_gap/2,screw_depth, box_size_gap[2]/2+tongue_bind_thickness_end/2],
 						v2_min=[-wedge_end_gap/2             ,-box_size_gap[2]/2+tongue_bind_thickness_end/2],
