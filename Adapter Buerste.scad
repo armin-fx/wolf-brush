@@ -1,3 +1,6 @@
+// Description:
+//
+// A 3D model for an adapter from Wolf-Garten handle to a brush.
 
 /* [Assembly] */
 
@@ -86,7 +89,6 @@ screw_rotation_angle = 0;
 /* [Hidden] */
 
 include <banded.scad>
-
 required_version ([2,9,0]);
 
 $fd=0.01;
